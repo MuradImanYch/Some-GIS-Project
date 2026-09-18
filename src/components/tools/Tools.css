@@ -1,0 +1,29 @@
+.tools {
+    position: fixed;
+    left: 3%;
+    top: 3%;
+    z-index: 1000;
+    height: 50px;
+    width: 250px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 8px;
+    border: 2px solid #000;
+    box-shadow: 0 4px 8px gray;
+    display: flex;
+    align-items: center;
+}
+.tools .btns {
+    height: 100%;
+    display: flex;
+    align-items: center;
+}
+.tools .btns button {
+    height: 35px;
+    width: 35px;
+    margin: 0 5px 0 10px;
+    cursor: pointer;
+    padding: 3px;
+}
+.tools .btns button img {
+    width: 100%;
+}
