@@ -1,4 +1,6 @@
-.tools {
+.tools .btns, .tools .drawBtns {
+    display: flex;
+    align-items: center;
     position: fixed;
     left: 3%;
     top: 3%;
@@ -7,23 +9,34 @@
     width: 250px;
     background: rgba(255, 255, 255, 0.9);
     border-radius: 8px;
-    border: 2px solid #000;
+    border: 1px solid #000;
     box-shadow: 0 4px 8px gray;
     display: flex;
     align-items: center;
 }
-.tools .btns {
-    height: 100%;
-    display: flex;
-    align-items: center;
-}
-.tools .btns button {
+.tools .btns button, .tools .drawBtns button {
     height: 35px;
     width: 35px;
     margin: 0 5px 0 10px;
     cursor: pointer;
     padding: 3px;
 }
-.tools .btns button img {
+.tools .btns button img, .tools .drawBtns button img {
     width: 100%;
+}
+
+.tools .drawBtns {
+    top: 10%;
+    min-height: 155px;
+    flex-direction: column;
+    align-items: flex-start;
+    width: 55px;
+}
+.tools .drawBtns button {
+   margin: 8px 0 8px 10px;
+}
+
+.tools .active {
+    background: rgba(255, 0, 0, 0.2);
+    border: 2px solid #000;
 }

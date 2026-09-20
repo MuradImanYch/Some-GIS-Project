@@ -40,12 +40,19 @@ import Tools from "./tools/Tools";
 function MapComponent() {
   const mapRef = useRef(null); // ref to div where OpenLayers map will be rendered
   const mapInstance = useRef(null); // ref to OpenLayers
+  const vectorSourceRef = useRef(null); // ref to OpenLayers vector source instance
+  const drawRef = useRef(null); // ref to OpenLayers draw interaction instance
+  const selectRef = useRef(null); // ref to OpenLayers select interaction instance
 
   const[isSelected, setIsSelected] = useState(false);
   const[properties, setProperties] = useState(null);
+  const[drawToggle, setDrawToggle] = useState(false);
+  const[drawType, setDrawType] = useState(null);
+  const[selectActive, setSelectActive] = useState(false);
 
   useEffect(() => {
     const selectInteraction = new Select();
+    selectRef.current = selectInteraction; // store select interaction instance in ref
 
     // POINT
     const point = new Feature({ // Creating one feature object 
@@ -183,6 +190,7 @@ function MapComponent() {
     );
 
     const vectorSource = new VectorSource();
+    vectorSourceRef.current = vectorSource; // store the vector source in the ref for later use
 
     vectorSource.addFeatures([point, line, polygon]); // Creating a vector source to hold the features
 
@@ -211,27 +219,9 @@ function MapComponent() {
 
     mapInstance.current = map;
 
-    const drawInteraction = new Draw({
-      source: vectorSource,
-      type: "Point",
-    });
-
-    drawInteraction.on("drawstart", (event) => {
-      // selectInteraction.setActive(false); // Deactivate select interaction while drawing
-      // selectInteraction.getFeatures().clear(); // Clear any selected features before starting to draw a new one
-      
-      event.feature.set("name", "My Point");
-      event.feature.set("id", 100);
-
-    });
-
-    drawInteraction.on("drawend", (event) => {
-      console.log("End drawing");
-      selectInteraction.setActive(true); // Reactivate select interaction after drawing 
-    });
-
     map.addInteraction(selectInteraction); // Adding the select interaction to the map
-    map.addInteraction(drawInteraction); // Adding the draw interaction to the map
+
+    selectInteraction.setActive(false); // Activating the select interaction by default
 
     selectInteraction.on("select", (event) => {
       const feature = event.selected[0];
@@ -251,6 +241,53 @@ function MapComponent() {
     };
   }, []);
 
+  const toggleDrawFunc = () => { // Draw toggle func
+    setDrawToggle(!drawToggle);
+    mapInstance.current.removeInteraction(drawRef.current);
+    !drawToggle && setDrawType(null);
+
+    // Deactivate the select interaction when toggling draw mode
+    setSelectActive(false);
+    selectRef.current.setActive(false);
+    setIsSelected(false);
+    setProperties(null);
+    selectRef.current.getFeatures().clear();
+  }
+
+  const changeDraw = (type) => { // change draw type func
+    // 1. Delete the previous Draw interaction if it exists
+    if (drawRef.current) {
+      mapInstance.current.removeInteraction(drawRef.current);
+    }
+
+    // 2. Create a new Draw interaction
+    const draw = new Draw({
+      source: vectorSourceRef.current,
+      type,
+    });
+
+    // 3. Add the new Draw interaction to the map
+    mapInstance.current.addInteraction(draw);
+
+    // 4. Remember the current Draw interaction
+    drawRef.current = draw;
+
+    setDrawType(type);
+  };
+
+  const toggleSelectFunc = () => { // Select toggle func
+    setSelectActive(!selectRef.current.getActive()); // select active state
+    selectRef.current.setActive(!selectRef.current.getActive()); // Toggle the select interaction's active state
+    selectRef.current.getFeatures().clear(); // Clear any selected features before starting to draw a new one
+    !selectRef.current.getActive() && setIsSelected(false);
+    !selectRef.current.getActive() && setProperties(null);
+
+    // Deactivate the draw interaction and reset its state when selecting features
+    setDrawType(null);
+    setDrawToggle(false);
+    mapInstance.current.removeInteraction(drawRef.current);
+  };
+
   return (
     <>
       <div
@@ -260,7 +297,7 @@ function MapComponent() {
           height: "100vh",
         }}
       />
-      <Tools />
+      <Tools drawToggle={drawToggle} toggleDrawFunc={toggleDrawFunc} changeDraw={changeDraw} drawType={drawType} toggleSelectFunc={toggleSelectFunc} selectActive={selectActive} />
       {isSelected && <Meta properties={properties} />}
     </>
   );
